@@ -1,0 +1,109 @@
+/* auth.css */
+
+.auth-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f9fafb;
+    padding: 1rem;
+  }
+  
+  .auth-container {
+    width: 100%;
+    max-width: 420px;
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .auth-toggle {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .auth-toggle-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    background-color: #f3f4f6;
+    color: #4b5563;
+    transition: background-color 0.2s ease;
+  }
+  
+  .auth-toggle-button:hover {
+    background-color: #e5e7eb;
+  }
+  
+  .auth-toggle-button:first-child {
+    border-top-left-radius: 0.75rem;
+    border-bottom-left-radius: 0.75rem;
+  }
+  
+  .auth-toggle-button:last-child {
+    border-top-right-radius: 0.75rem;
+    border-bottom-right-radius: 0.75rem;
+  }
+  
+  .auth-toggle-button.active-login {
+    background-color: #778ca3;
+    color: white;
+  }
+  
+  .auth-toggle-button.active-register {
+    background-color: #778ca3;
+    color: white;
+  }
+  
+  .auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .auth-field {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .auth-label {
+    font-size: 0.875rem;
+    color: #374151;
+  }
+  
+  .auth-input {
+    margin-top: 0.25rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    color: black;
+  }
+  
+  .auth-input:focus {
+    border-color: #778ca3;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  }
+  
+  .auth-submit {
+    width: 100%;
+    background-color: #778ca3;
+    color: white;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 0.75rem;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .auth-submit:hover {
+    background-color: #778ca3;
+  }
+  
