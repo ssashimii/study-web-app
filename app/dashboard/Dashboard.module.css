@@ -1,170 +1,702 @@
 .wrapper {
-  display: grid;
-  grid-template-columns: 200px 1fr 250px;
-  grid-template-rows: auto 1fr;
-  grid-template-areas:
-    "sidebar header header"
-    "sidebar main buddies";
-  height: 100vh;
-  gap: 1rem;
-  padding: 1rem;
-  background: #f9f9f9;
+	display: grid;
+	grid-template-columns: 200px 1fr 250px;
+	grid-template-rows: auto 1fr;
+	grid-template-areas:"sidebar header header""sidebar main buddies";
+	height: 100vh;
+	gap: 1rem;
+	padding: 1rem;
+	box-sizing: border-box;
+	background: black;
 }
-
+.logo {
+	margin: 0;
+	font-size: 2.1rem;
+	font-weight: bold;
+	color: white;
+	text-align: right;
+}
+.courseSearch .searchInput {
+	padding: 0.6rem ;
+	border: 1px solid #ccc;
+	border-radius: 0.75rem;
+	font-size: 1rem;
+	width: 120%;
+	max-width: 320px;
+	background: #fff;
+	color: black;
+}
 .sidebar {
-  grid-area: sidebar;
-  background: #eee;
-  border-radius: 1rem;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+	grid-area: sidebar;
+	background: #eee;
+	border-radius: 1rem;
+	padding: 1rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
 }
-
 .sidebarTitle {
-  margin: 0;
-  text-align: center;
-  font-weight: bold;
-  color: #333;
+	font-weight: bold;
+	text-align: center;
+	color: #333;
 }
-
 .navItem {
-  background: #ccc;
-  border: none;
-  border-radius: 0.5rem;
-  padding: 0.75rem;
-  text-align: center;
-  cursor: pointer;
+	background: #b49af6;
+	border: none;
+	border-radius: 0.5rem;
+	padding: 0.75rem;
+	cursor: pointer;
+	font-weight: 500;
+	display: block;
+	width: 100%;
+	text-align: center;
 }
-
-.header {
-  grid-area: header;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+.dropdownWrapper {
+	position: relative;
 }
-
-.search {
-  background: #eee;
-  border-radius: 1rem;
-  padding: 0.5rem 1rem;
-  flex: 1;
-  max-width: 400px;
+.dropdownMenu {
+	position: absolute;
+	top: calc(100% + 0.25rem);
+	left: 0;
+	background: #f7f7f7;
+	border: 1px solid #ccc;
+	border-radius: 0.5rem;
+	padding: 0.5rem;
+	z-index: 10;
+	display: flex;
+	width: 100%;
+	flex-direction: column;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+	gap: 0.5rem;
 }
-
-.searchInput {
-  width: 100%;
-  border: none;
-  background: transparent;
-  outline: none;
-  font-size: 1rem;
+.dropdownItem {
+	background: none;
+	border: none;
+	padding: 0.5rem 0.75rem;
+	cursor: pointer;
+	text-align: left;
+	font-size: 0.95rem;
+	color: #333;
+	width: 100%;
 }
-
+.dropdownItem:hover {
+	background: #eaeaea;
+}
+.dropdownItem:last-child {
+	border-bottom: none;
+}
 .topNav {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+	display: flex;
+	align-items: center;
+	gap: 1rem;
 }
-
 .icon {
-  font-size: 1.25rem;
-  cursor: pointer;
+	font-size: 1.25rem;
+	cursor: pointer;
 }
-
 .profile {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
 }
-
 .profileAvatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #ccc;
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	background: #ccc;
+	overflow: hidden;
 }
-
+.profileAvatar img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
 .profileName {
-  font-weight: 500;
-  color: #333;
+	font-weight: 500;
 }
-
 .profileYear {
-  font-size: 0.85rem;
-  color: #666;
+	font-size: 0.85rem;
+	color: #666;
 }
-
 .main {
-  grid-area: main;
-  overflow-y: auto;
-  padding: 1rem;
+	grid-area: main;
+	overflow-y: auto;
+	padding: 0.6rem;
+	position: relative;
 }
-
 .sectionTitle {
-  margin: 0 0 0.5rem;
-  font-size: 1.1rem;
+	margin-bottom: 0.5rem;
+	font-size: 1.1rem;
 }
-
 .coursesGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 1rem;
 }
-
-.courseItem {
-  background: #ccc;
-  height: 100px;
-  border-radius: 0.5rem;
+.chatContainer {
+	position: absolute;
+	bottom: 1rem;
+	right: 1rem;
+	display: flex;
+	gap: 1rem;
+	z-index: 1000;
 }
-
-.courseItemLarge {
-  grid-column: 1 / span 2;
-  height: 180px;
+.chatWindow {
+	width: 240px;
+	height: 320px;
+	background: #fff;
+	color: #000;
+	border: 1px solid #ccc;
+	border-radius: 0.5rem;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
-
+.chatHeader {
+	background: #f1f1f1;
+	padding: 0.5rem;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	font-weight: 500;
+}
+.chatClose {
+	background: none;
+	border: none;
+	font-size: 1.2rem;
+	cursor: pointer;
+}
+.chatBody {
+	flex: 1;
+	padding: 0.5rem;
+	background: #fafafa;
+	overflow-y: auto;
+	overflow-x: hidden;
+	word-wrap: break-word;
+	white-space: pre-wrap;
+}
+.chatMessage {
+	margin-bottom: 0.4rem;
+	font-size: 0.875rem;
+	word-break: break-word;
+}
+.chatInput {
+	display: flex;
+	align-items: flex-end;
+	border-top: 1px solid #ddd;
+	padding: 0.25rem;
+	background: #fff;
+}
+.chatInputField {
+	flex: 1;
+	border: 1px solid #ccc;
+	border-radius: 0.25rem;
+	padding: 0.5rem;
+	margin-right: 0.5rem;
+	resize: none;
+	overflow-y: auto;
+	font-size: 0.875rem;
+	line-height: 1.2;
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+.chatSend {
+	flex: 0 0 auto;
+	background: #ddd;
+	color: #000;
+	border: none;
+	border-radius: 0.25rem;
+	padding: 0.5rem 0.75rem;
+	cursor: pointer;
+	font-size: 0.875rem;
+}
 .buddies {
-  grid-area: buddies;
-  background: #666;
-  border-radius: 1rem;
-  padding: 1rem;
-  color: #fff;
-  overflow-y: auto;
+	grid-area: buddies;
+	background: white;
+	padding: 1rem;
+	border-radius: 1rem;
+	color: black;
+	overflow-y: auto;
 }
-
 .buddy {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	margin-bottom: 1rem;
 }
-
 .buddyAvatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #ccc;
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	background: #ccc;
 }
-
 .buddyInfo {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex: 1;
+	flex: 1;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
 }
-
 .buddyName {
-  font-size: 0.95rem;
+	font-size: 0.95rem;
 }
-
 .buddyBtn {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.25rem 0.75rem;
-  background: #ddd;
-  border: none;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  font-size: 0.875rem;
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+	background: #ddd;
+	color: #000;
+	border: none;
+	border-radius: 0.5rem;
+	padding: 0.25rem 0.75rem;
+	cursor: pointer;
+	font-size: 0.875rem;
+}
+.modalOverlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 2000;
+}
+.modalContent {
+	background: #fff;
+	color: #000;
+	padding: 2rem;
+	border-radius: 1rem;
+	width: 90%;
+	max-width: 500px;
+	box-sizing: border-box;
+}
+.modalDescription {
+	margin: 1rem 0;
+	line-height: 1.4;
+}
+.modalBuddyList {
+	list-style: disc;
+	margin-left: 1.5rem;
+}
+.modalClose {
+	margin-top: 1.5rem;
+	background: #ddd;
+	border: none;
+	padding: 0.5rem 1rem;
+	border-radius: 0.5rem;
+	cursor: pointer;
+}
+.chatContainer {
+	position: absolute;
+	bottom: 1rem;
+	right: 1rem;
+	display: flex;
+}
+.header {
+	grid-area: header;
+	display: flex;
+	/* lay out children in a row */
+	justify-content: space-between;
+	align-items: center;
+	padding: 1rem 2rem;
+	background: black;
+}
+.headerLeft {
+	flex: 1;
+}
+.headerTop {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+.main {
+	grid-column: 2;
+	grid-row: 2;
+	overflow-y: auto;
+	padding: 2rem;
+}
+.buddies .sectionTitle {
+	color: black
+}
+.buddy {
+	display: flex;
+	align-items: center;
+	margin-bottom: 1rem;
+	gap: 0.75rem;
+}
+.buddyAvatar {
+	width: 40px;
+	height: 40px;
+	background: #999;
+	border-radius: 50%;
+}
+.buddyInfo {
+	flex: 1;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+.buddyName {
+	font-size: 0.95rem;
+}
+.buddyBtn {
+	background: #f0f0f0;
+	color: #333;
+	border: none;
+	padding: 0.4rem 0.8rem;
+	font-size: 0.85rem;
+	border-radius: 0.5rem;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+}
+.buddyBtn:hover {
+	background: #e0e0e0;
+}
+.chatContainer {
+	position: absolute;
+	bottom: 1.5rem;
+	right: 1.5rem;
+	display: flex;
+	gap: 1rem;
+	z-index: 100;
+}
+.chatWindow {
+	width: 300px;
+	height: 400px;
+	background: #fff;
+	border-radius: 0.75rem;
+	box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+.chatHeader {
+	background: #f7f7f7;
+	padding: 0.75rem 1rem;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	font-weight: bold;
+	color: #333;
+}
+.chatClose {
+	background: transparent;
+	border: none;
+	font-size: 1.2rem;
+	cursor: pointer;
+	color: #666;
+}
+.chatBody {
+	flex: 1;
+	padding: 0.75rem 1rem;
+	overflow-y: auto;
+	font-size: 0.9rem;
+	color: #333;
+}
+.chatMessage {
+	margin-bottom: 0.5rem;
+	word-wrap: break-word;
+}
+.chatInput {
+	display: flex;
+	align-items: center;
+	padding: 0.5rem;
+	border-top: 1px solid #eee;
+}
+.chatInputField {
+	flex: 1;
+	padding: 0.6rem 0.8rem;
+	border: 1px solid #ccc;
+	border-radius: 0.5rem;
+	font-size: 0.9rem;
+	line-height: 1.3;
+}
+.chatSend {
+	margin-left: 0.5rem;
+	background: #5b3ca7;
+	color: #fff;
+	border: none;
+	padding: 0.6rem 1rem;
+	border-radius: 0.5rem;
+	font-size: 0.9rem;
+	cursor: pointer;
+}
+.chatSend:hover {
+	background: #4a2c8c;
+}
+.chatBody::-webkit-scrollbar {
+	width: 6px;
+}
+.chatBody::-webkit-scrollbar-thumb {
+	background: rgba(0,0,0,0.2);
+	border-radius: 3px;
+	gap: 1rem;
+	z-index: 1000;
+}
+.coursesGrid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 2rem;
+	margin-top: 1rem;
+}
+.courseItem {
+	background: #ddd;
+	border-radius: 1rem;
+	height: 8rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1.25rem;
+	color: #000;
+	cursor: pointer;
+	transition: background 0.2s, transform 0.1s;
+}
+.courseItem:hover {
+	background: #ccc;
+	transform: scale(1.02);
+}
+.courseItemLarge {
+	grid-column: 1 / -1;
+	background: #ddd;
+	border-radius: 1rem;
+	height: 14rem;
+	padding: 2rem;
+	font-size: 1.35rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #000;
+	cursor: pointer;
+	transition: background 0.2s, transform 0.1s;
+}
+.courseItem,.courseItemLarge {
+	border-radius: 1rem;
+	color: #000;
+	cursor: pointer;
+	transition: transform 0.1s;
+}
+.courseItemLarge:hover {
+	background: #ccc;
+	transform: scale(1.02);
+}
+/* ─── Modals ───────────────────────────────────────────────────────── */
+.modalOverlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.4);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 200;
+}
+.modalContent {
+	background: #fff;
+	border-radius: 1rem;
+	width: 90%;
+	max-width: 600px;
+	max-height: 80%;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+}
+.modalHeader {
+	padding: 1rem 1.5rem;
+	background: #f7f7f7;
+	border-bottom: 1px solid #ddd;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+.modalHeader h2 {
+	margin: 0;
+	font-size: 1.5rem;
+	color: #333;
+}
+.modalClose {
+	background: transparent;
+	border: none;
+	font-size: 1.5rem;
+	cursor: pointer;
+	color: #666;
+}
+.modalBody {
+	padding: 1.5rem;
+	overflow-y: auto;
+	flex: 1;
+	color: #333;
+	font-size: 1rem;
+}
+.modalBody p {
+	margin: 0 0 1rem;
+	line-height: 1.5;
+}
+.modalFooter {
+	padding: 1rem 1.5rem;
+	background: #f9f9f9;
+	border-top: 1px solid #eee;
+}
+.modalFooter h3 {
+	margin: 0 0 0.5rem;
+	font-size: 1.1rem;
+	color: #333;
+}
+.modalFooter ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+.modalFooter li {
+	padding: 0.5rem 0;
+	border-bottom: 1px solid #eee;
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+}
+.modalFooter li:last-child {
+	border-bottom: none;
+}
+.modalFooter .buddyAvatar {
+	width: 36px;
+	height: 36px;
+	background: #999;
+	border-radius: 50%;
+}
+.modalFooter .buddyName {
+	font-size: 0.95rem;
+	color: #333;
+}
+/* ─── Mobile styles ───────────────────────────────────────────────── */
+@media (max-width: 768px) {
+	/* hide desktop sidebar + header */
+	.sidebar,.header {
+		display: none !important;
+	}
+	/* wrapper → single column */
+	.wrapper {
+		display: flex;
+		flex-direction: column;
+		background: black;
+		padding: 0;
+		margin: 0;
+		min-height: 100vh;
+	}
+	/* ── MOBILE HEADER ───────────────────────── */
+	.mobileHeader {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 50px;
+		background: #000;
+		z-index: 1001;
+	}
+	.mobileHeader .logo {
+		font-size: 1.5rem;
+		color: #fff;
+	}
+	.mobileHeader .searchIcon {
+		position: absolute;
+		right: 1rem;
+		background: none;
+		border: none;
+		font-size: 1.25rem;
+		color: #fff;
+		cursor: pointer;
+	}
+	/* ── push down courses below mobile header ── */
+	.coursesGrid {
+		margin-top: 50px;
+	}
+	/* ── horizontal snap scrolling courses ────── */
+	.coursesGrid {
+		display: flex;
+		overflow-x: auto;
+		gap: 1rem;
+		scroll-snap-type: x mandatory;
+		padding: 1rem 0;
+	}
+	.courseItem,.courseItemLarge {
+		flex: 0 0 140px;
+		height: 140px;
+		scroll-snap-align: start;
+		border-radius: 1rem;
+		background: #ddd;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		color: #000;
+		cursor: pointer;
+	}
+	/* ── buddies below courses ───────────────── */
+	.buddies {
+		background: transparent;
+		color: white;
+		padding: 1rem;
+		order: 2;
+	}
+	/* ── chat windows float above content ───── */
+	.chatContainer {
+		position: fixed;
+		bottom: 60px;
+		/* above bottom nav */
+		left: 0;
+		right: 0;
+		display: flex;
+		justify-content: center;
+		z-index: 1000;
+	}
+	.chatWindow {
+		width: 90%;
+		max-width: 350px;
+		height: 300px;
+	}
+	/* ── bottom mobile nav ───────────────────── */
+	.mobileNav {
+		display: flex;
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		height: 50px;
+		background: #f2f2f2;
+		justify-content: space-around;
+		align-items: center;
+		border-top: 1px solid #ccc;
+		z-index: 1000;
+	}
+	.mobileNav button {
+		background: none;
+		border: none;
+		font-size: 1.5rem;
+		color: #333;
+		cursor: pointer;
+	}
+	/* ── mobile dropdown (rises above nav) ───── */
+	.mobileDropdown {
+		display: flex;
+		flex-direction: column;
+		position: absolute;
+		bottom: 50px;
+		left: 1rem;
+		right: 1rem;
+		background: #f2f2f2;
+		border-radius: 0.75rem;
+		box-shadow: 0 -2px 8px rgba(0,0,0,0.2);
+		padding: 0.75rem;
+		gap: 0.5rem;
+		z-index: 1001;
+	}
 }
