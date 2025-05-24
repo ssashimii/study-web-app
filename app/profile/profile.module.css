@@ -1,0 +1,266 @@
+
+.wrapper {
+  display: flex;
+  min-height: 100vh;
+  background: black;
+  box-sizing: border-box;
+}
+
+.sidebar {
+  position: relative;      
+  overflow: visible;        
+  width: 220px;
+  background: #f2f2f2;
+  border-radius: 1rem;
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 95vh;
+  margin-top: 1.5rem;
+}
+
+.sidebarTitle {
+  font-weight: bold;
+  text-align: center;
+  color: #333;
+}
+
+.navItemGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+
+.dropdownWrapper {
+  position: relative;  
+  overflow: visible;
+}
+
+/* all sidebar buttons */
+.navItem {
+  display: flex;                  
+  justify-content: center;        
+  align-items: center;
+  width: 100%;                    
+  padding: 0.75rem;
+  background: #bfa2f5;
+  color: #000;
+  border: none;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  font-weight: 500;
+  text-decoration: none;
+  box-sizing: border-box;
+  z-index: 1;                     
+}
+
+.navItem:hover {
+  background: #a88de1;
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + 0.25rem);      
+  left: 0;
+  width: 100%;
+  background: #f7f7f7;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  z-index: 9999;                
+}
+
+.dropdownItem {
+  background: none;
+  border: none;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  text-align: left;
+  font-size: 0.95rem;
+  color: #333;
+  cursor: pointer;
+}
+
+.dropdownItem:hover {
+  background: #eaeaea;
+}
+
+.page {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+.card {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 1.25rem;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  max-width: 420px;
+  width: 100%;
+  color: #000;
+}
+
+
+.avatarContainer {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.avatar,
+.avatarFallback {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: #ccc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+  color: #fff;
+  object-fit: cover;
+}
+
+
+.name {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+/* Sections */
+.section {
+  text-align: left;
+  margin-top: 1.5rem;
+}
+
+.section h3 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  color: #444;
+}
+
+
+.courseList,
+.availabilityList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.courseList li,
+.availabilityList li {
+  background: #eee;
+  padding: 0.5rem 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 0.5rem;
+}
+
+
+.editInput {
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.4rem;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+  box-sizing: border-box;
+}
+
+.addCourseContainer {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.addButton {
+  background: #5b3ca7;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.4rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.addButton:hover {
+  background: #472a8a;
+}
+
+.deleteBtn {
+  background: transparent;
+  border: none;
+  color: #a00;
+  font-size: 1.2rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.editBtn {
+  background: #5b3ca7;
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  margin-top: 2rem;
+  cursor: pointer;
+}
+
+.editBtn:hover {
+  background: #472a8a;
+}
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+
+  .mobileNav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0; right: 0;
+    background: #f2f2f2;
+    height: 50px;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 1000;
+  }
+  .mobileNav button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #333;
+    cursor: pointer;
+  }
+
+  .mobileDropdown {
+    position: absolute;
+    bottom: 60px;        
+    right: 1rem;
+    background: #f2f2f2;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    z-index: 1001;
+  }
+
+  .page {
+    padding-bottom: 80px; 
+  }
+}
