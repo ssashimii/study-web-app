@@ -8,7 +8,7 @@ import {
   FiX,
   FiSearch,
 } from 'react-icons/fi'
-import styles from './dashboard.module.css'
+import styles from './Dashboard.module.css'
 import { useRouter } from 'next/navigation'
 
 export interface Course {
@@ -46,7 +46,18 @@ export default function Dashboard({ profile, courses, buddies }: DashboardProps)
   const handleViewProfile = () => router.push('/profile')
   const handleStudyAvailability = () => router.push('/availability')
   const handleMessages = () => router.push('/messages')
-  const handleLogout = () => router.push('/register')
+  const handleLogout = async () => {
+  try {
+    const res = await fetch('/api/logout', { method: 'POST' })
+    if (res.ok) {
+      router.push('/register') // после выхода отправляем на регистрацию
+    } else {
+      console.error('Logout failed')
+    }
+  } catch (error) {
+    console.error('Logout error:', error)
+  }
+}
   const closeModal = () => setSelectedCourse(null)
 
   const filteredCourses = courses.filter(c =>
@@ -71,7 +82,7 @@ export default function Dashboard({ profile, courses, buddies }: DashboardProps)
         <h1 className={styles.logo}>Study Buddy</h1>
         <button
           className={styles.searchIcon}
-          onClick={() => {/* you can hook this to toggle a search input/modal */}}
+          onClick={() => {}}
         >
           <FiSearch />
         </button>

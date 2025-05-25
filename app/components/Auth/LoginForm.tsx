@@ -5,49 +5,62 @@ import { useRouter } from 'next/navigation'
 import styles from './LoginForm.module.css'
 
 export default function LoginForm() {
-  const [email, setEmail]       = useState<string>('')
+  const [email, setEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  e.preventDefault()
 
-    // TODO: call your login API here
-    console.log({ email, password })
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    })
 
-    // On successful login, navigate to the dashboard
-    router.push('/dashboard')
+    const data = await res.json()
+
+    if (res.ok && data.success) {
+      localStorage.setItem('token', data.token)
+      router.push('/dashboard')
+    } else {
+      alert(data.error || 'Failed to login')
+    }
+  } catch (err) {
+    alert('Network error')
   }
+}
+
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
-      <h1 className={styles.title}>Study Buddy</h1>
-      <h2 className={styles.subtitle}>Login</h2>
+      <div className={styles.formGroup}>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className={styles.input}
+          required
+          aria-label="Email"
+        />
+        <label className={styles.label}>Email</label>
+      </div>
 
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setEmail(e.target.value)
-        }
-        className={styles.input}
-        required
-      />
-
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setPassword(e.target.value)
-        }
-        className={styles.input}
-        required
-      />
+      <div className={styles.formGroup}>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className={styles.input}
+          required
+          aria-label="Password"
+        />
+        <label className={styles.label}>Password</label>
+      </div>
 
       <button type="submit" className={styles.button}>
-        Login
+        Sign In
       </button>
     </form>
   )

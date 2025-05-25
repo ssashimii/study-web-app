@@ -1,4 +1,3 @@
-// app/components/Auth/RegisterForm.tsx
 'use client'
 
 import React, { useState } from 'react'
@@ -6,61 +5,71 @@ import { useRouter } from 'next/navigation'
 import styles from './RegisterForm.module.css'
 
 export default function RegisterForm() {
-  const [fullName, setFullName] = useState<string>('')
-  const [email, setEmail]       = useState<string>('')
-  const [password, setPassword] = useState<string>('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const router = useRouter()
 
-   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    // TODO: call your registration API here...
-    console.log({ fullName, email, password })
 
-
-   router.push(`/register/profile?fullName=${encodeURIComponent(fullName)}`)
+    sessionStorage.setItem('registerData', JSON.stringify({ firstName, lastName, email, password }))
+    router.push('/register/profile')
   }
-
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
-      <h1 className={styles.title}>Study Buddy</h1>
-      <h2 className={styles.subtitle}>Register</h2>
+      <div className={styles.formGroup}>
+        <input
+          type="text"
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
+          className={styles.input}
+          required
+          aria-label="First name"
+          placeholder="First Name"  // вот тут плейсхолдер
+        />
+      </div>
 
-      <input
-        type="text"
-        placeholder="Full name"
-        value={fullName}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setFullName(e.target.value)
-        }
-        className={styles.input}
-        required
-      />
+      <div className={styles.formGroup}>
+        <input
+          type="text"
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
+          className={styles.input}
+          required
+          aria-label="Last name"
+          placeholder="Last Name"  // плейсхолдер
+        />
+      </div>
 
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setEmail(e.target.value)
-        }
-        className={styles.input}
-        required
-      />
+      <div className={styles.formGroup}>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className={styles.input}
+          required
+          aria-label="Email"
+          placeholder="Email"  // плейсхолдер для почты
+        />
+      </div>
 
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setPassword(e.target.value)
-        }
-        className={styles.input}
-        required
-      />
+      <div className={styles.formGroup}>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className={styles.input}
+          required
+          aria-label="Password"
+          placeholder="Password"  // плейсхолдер для пароля
+        />
+      </div>
 
       <button type="submit" className={styles.button}>
-        Register
+        Create Account
       </button>
     </form>
   )

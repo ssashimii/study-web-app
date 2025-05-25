@@ -1,16 +1,35 @@
-// app/dashboard/page.tsx
+import { cookies } from 'next/headers'
+import jwt from 'jsonwebtoken'
 import Dashboard, { Course, Buddy, Profile } from './Dashboard'
-import { getProfile, getCourses, getBuddies } from '@/lib/data'
+import { getProfile, getBuddies } from '@/lib/data'  // убрал getCourses
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key'
 
 export default async function Page() {
-  // grab your fake “you”
-  const profile: Profile  = await getProfile()
+  const cookieStore = await cookies()
+  const token = cookieStore.get('token')?.value
 
-  // grab the fake courses list
-  const courses: Course[] = await getCourses()
+  if (!token) {
+    throw new Error('Unauthorized: No token')
+  }
 
-  // grab the fake buddies list
-  const buddies: Buddy[]  = await getBuddies()
+  let userId: number
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: number }
+    userId = decoded.userId
+  } catch {
+    throw new Error('Invalid token')
+  }
+
+  const profile: Profile | null = await getProfile(userId)
+  if (!profile) {
+    throw new Error('Profile not found')
+  }
+
+  // Берём курсы из профиля пользователя
+  const courses: Course[] = profile.courses
+
+  const buddies: Buddy[] = await getBuddies(userId)
 
   return (
     <Dashboard

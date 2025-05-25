@@ -1,39 +1,42 @@
 'use client'
 
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import styles from './ProfileForm.module.css'
+import { useRouter } from 'next/navigation'
+
 
 export interface ProfileFormProps {
   studentName: string
 }
 
 export default function ProfileForm({ studentName }: ProfileFormProps) {
+  const router = useRouter()
   const [year, setYear] = useState('')
   const [courses, setCourses] = useState<string[]>(['', '', ''])
   const [interests, setInterests] = useState('')
   const [environment, setEnvironment] = useState('')
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [fullName, setFullName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log({ year, courses, interests, environment, avatarUrl })
-    // TODO: send to your API, including avatarUrl or raw File
+  const getFirstAndLastName = (name: string): [string, string] => {
+    const parts = name.trim().split(' ')
+    const first = parts[0] || ''
+    const last = parts.slice(1).join(' ') || ''
+    return [first, last]
   }
 
-  const handleCourseChange = (idx: number, value: string) => {
-    setCourses(prev => {
-      const next = [...prev]
-      next[idx] = value
-      return next
-    })
-  }
-
-  const addCourse = () => {
-    if (courses.length < 7) {
-      setCourses(prev => [...prev, ''])
+  useEffect(() => {
+    const stored = sessionStorage.getItem('registerData')
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      setFullName(`${parsed.firstName || ''} ${parsed.lastName || ''}`.trim())
+      setEmail(parsed.email || '')
+      setPassword(parsed.password || '')
     }
-  }
+  }, [])
 
   const openFileDialog = () => {
     fileInputRef.current?.click()
@@ -47,6 +50,47 @@ export default function ProfileForm({ studentName }: ProfileFormProps) {
         setAvatarUrl(reader.result as string)
       }
       reader.readAsDataURL(file)
+    }
+  }
+
+  const handleCourseChange = (index: number, value: string) => {
+    setCourses(prev => {
+      const newCourses = [...prev]
+      newCourses[index] = value
+      return newCourses
+    })
+  }
+
+  const addCourse = () => {
+    if (courses.length < 7) {
+      setCourses(prev => [...prev, ''])
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const [firstName, lastName] = getFirstAndLastName(fullName)
+
+    const res = await fetch('/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        firstName,
+        lastName,
+        email,
+        password,
+        avatar: avatarUrl,
+        academic: year,
+        interests,
+        studyEnv: environment,
+        courses,
+      }),
+    })
+
+    if (res.ok) {
+      router.push('/dashboard')
+    } else {
+      console.error('Ошибка при создании пользователя')
     }
   }
 
@@ -76,9 +120,10 @@ export default function ProfileForm({ studentName }: ProfileFormProps) {
               ref={fileInputRef}
               onChange={handleFileChange}
               className={styles.fileInput}
+              style={{ display: 'none' }}
             />
           </div>
-          <p className={styles.studentName}>{studentName}</p>
+          <p className={styles.studentName}>{fullName}</p>
         </div>
 
         <div className={styles.fields}>
