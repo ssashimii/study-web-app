@@ -46,11 +46,12 @@ export default function Dashboard({ profile, courses, buddies }: DashboardProps)
   const handleViewProfile = () => router.push('/profile')
   const handleStudyAvailability = () => router.push('/availability')
   const handleMessages = () => router.push('/messages')
+  const handleBuddies = () => router.push('/buddies')
   const handleLogout = async () => {
   try {
     const res = await fetch('/api/logout', { method: 'POST' })
     if (res.ok) {
-      router.push('/register') // после выхода отправляем на регистрацию
+      router.push('/register')
     } else {
       console.error('Logout failed')
     }
@@ -107,13 +108,15 @@ export default function Dashboard({ profile, courses, buddies }: DashboardProps)
                 className={styles.dropdownItem}
                 onClick={handleStudyAvailability}
               >
-                Your Study Availability
+                My Study Availability
               </button>
             </div>
           )}
         </div>
         <button className={styles.navItem}>Courses</button>
-        <button className={styles.navItem}>Buddies</button>
+        <button className={styles.navItem} onClick={handleBuddies}>
+          Buddies
+        </button>
         <button className={styles.navItem} onClick={handleMessages}>
           Messages
         </button>
@@ -129,7 +132,7 @@ export default function Dashboard({ profile, courses, buddies }: DashboardProps)
           <div className={styles.courseSearch}>
             <input
               type="text"
-              placeholder="Search courses…"
+              placeholder="Search buddies…"
               value={filter}
               onChange={e => setFilter(e.target.value)}
               className={styles.searchInput}
@@ -141,6 +144,7 @@ export default function Dashboard({ profile, courses, buddies }: DashboardProps)
 
       {/* ─── MAIN AREA ─────────────────────────────── */}
       <main className={styles.main}>
+          <h2 className={styles.welcomeMessage}>Hello, {profile.name.split(' ')[0]} 👋 Here is your dashboard!</h2>
         <h3 className={styles.sectionTitle}>Current Courses</h3>
         <div className={styles.coursesGrid}>
           {filteredCourses.map(c => (

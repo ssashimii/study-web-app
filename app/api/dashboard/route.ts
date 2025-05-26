@@ -24,7 +24,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const userId = decoded.userId
 
-    // Пользователь с курсами и доступностью
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
@@ -37,7 +36,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(404).json({ error: 'User not found' })
     }
 
-    // Формируем профиль
     const profile = {
       name: `${user.firstName} ${user.lastName}`,
       email: user.email,
@@ -54,7 +52,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     }
 
-    // Пример: запрос всех бадди — пользователей, которые учатся на тех же курсах
     const courseIds = user.courses.map(c => c.id)
 
     const buddies = await prisma.user.findMany({
@@ -71,7 +68,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     })
 
-    // Формируем бадди с курсами
     const buddiesFormatted = buddies.map(b => ({
       id: b.id,
       name: `${b.firstName} ${b.lastName}`,
@@ -79,7 +75,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       avatarUrl: b.avatar ?? null,
     }))
 
-    // Отдаём все вместе
     res.status(200).json({
       profile,
       courses: profile.courses,

@@ -8,6 +8,8 @@
 	padding: 1rem;
 	box-sizing: border-box;
 	background: #ecf0f1;
+	font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
 }
 .logo {
 	margin: 0;
@@ -26,6 +28,14 @@
 	background: #fff;
 	color: black;
 }
+
+.welcomeMessage {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
 .sidebar {
 	grid-area: sidebar;
 	background: #eee;

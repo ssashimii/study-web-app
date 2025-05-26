@@ -20,7 +20,10 @@ model User {
   availability Availability[]
   courses      Course[]
   createdAt    DateTime       @default(now())
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
 }
+
 
 model Availability {
   id      Int    @id @default(autoincrement())
@@ -41,3 +44,12 @@ model Course {
   userId      Int
 }
 
+model Message {
+  id         Int      @id @default(autoincrement())
+  text       String
+  createdAt  DateTime @default(now())
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
+  senderId   Int
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  receiverId Int
+}
