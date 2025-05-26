@@ -29,7 +29,7 @@ export default function AvailabilityPage() {
   }
 
   const fetchAllAvailabilities = async () => {
-    const res = await fetch('/api/all-availability')
+    const res = await fetch('/api/availability/others')
     const data = await res.json()
     setAllAvailabilities(data)
   }
