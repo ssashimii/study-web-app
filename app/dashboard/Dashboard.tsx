@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import {
   FiHome,
   FiMenu,
@@ -21,11 +21,20 @@ export interface Buddy {
   id: number
   name: string
   courseIds: number[]
+  avatarUrl?: string
 }
 export interface Profile {
   name: string
   year: string
   avatarUrl: string | null
+}
+
+interface Message {
+  id: number
+  senderId: number
+  receiverId: number
+  text: string
+  createdAt: string
 }
 
 interface DashboardProps {
@@ -34,13 +43,41 @@ interface DashboardProps {
   buddies: Buddy[]
 }
 
-export default function Dashboard({ profile, courses, buddies }: DashboardProps) {
+export default function Dashboard({ profile, courses, buddies: initialBuddies }: DashboardProps) {
   const [filter, setFilter] = useState('')
-  const [openChats, setOpenChats] = useState<Buddy[]>([])
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [buddies, setBuddies] = useState<Buddy[]>(initialBuddies)
+  const [loading, setLoading] = useState(false)
+  const [openChats, setOpenChats] = useState<{buddy: Buddy, messages: Message[]}[]>([])
+  const [chatInputs, setChatInputs] = useState<Record<number, string>>({})
+  const chatBodyRefs = useRef<Record<number, HTMLDivElement | null>>({})
   const router = useRouter()
+
+  useEffect(() => {
+    const fetchBuddies = async () => {
+      try {
+        setLoading(true)
+        const res = await fetch('/api/buddies')
+        if (!res.ok) throw new Error('Failed to fetch buddies')
+        const data = await res.json()
+        setBuddies(data)
+      } catch (error) {
+        console.error('Error fetching buddies:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchBuddies()
+  }, [])
+
+  const setChatBodyRef = useCallback((id: number) => (el: HTMLDivElement | null) => {
+    if (el) {
+      chatBodyRefs.current[id] = el
+    }
+  }, [])
 
   const toggleProfileDropdown = () => setProfileDropdownOpen(p => !p)
   const handleViewProfile = () => router.push('/profile')
@@ -48,29 +85,86 @@ export default function Dashboard({ profile, courses, buddies }: DashboardProps)
   const handleMessages = () => router.push('/messages')
   const handleBuddies = () => router.push('/buddies')
   const handleLogout = async () => {
-  try {
-    const res = await fetch('/api/logout', { method: 'POST' })
-    if (res.ok) {
-      router.push('/register')
-    } else {
-      console.error('Logout failed')
+    try {
+      const res = await fetch('/api/logout', { method: 'POST' })
+      if (res.ok) {
+        router.push('/register')
+      } else {
+        console.error('Logout failed')
+      }
+    } catch (error) {
+      console.error('Logout error:', error)
     }
-  } catch (error) {
-    console.error('Logout error:', error)
   }
-}
   const closeModal = () => setSelectedCourse(null)
 
   const filteredCourses = courses.filter(c =>
     c.title.toLowerCase().includes(filter.toLowerCase())
   )
 
-  const openChat = (b: Buddy) => {
-    setOpenChats(prev => (prev.some(x => x.id === b.id) ? prev : [...prev, b]))
+  const openChat = async (buddy: Buddy) => {
+    if (openChats.some(chat => chat.buddy.id === buddy.id)) return
+    
+    try {
+      const res = await fetch(`/api/messages?contactId=${buddy.id}`)
+      if (!res.ok) throw new Error('Failed to load messages')
+      const messages = await res.json()
+      
+      setOpenChats(prev => [...prev, { buddy, messages }])
+      setChatInputs(prev => ({ ...prev, [buddy.id]: '' }))
+    } catch (error) {
+      console.error('Error loading messages:', error)
+    }
   }
+
   const closeChat = (id: number) => {
-    setOpenChats(prev => prev.filter(b => b.id !== id))
+    setOpenChats(prev => prev.filter(chat => chat.buddy.id !== id))
+    setChatInputs(prev => {
+      const newInputs = { ...prev }
+      delete newInputs[id]
+      return newInputs
+    })
   }
+
+  const sendMessage = async (buddyId: number) => {
+    const messageText = chatInputs[buddyId]?.trim()
+    if (!messageText) return
+
+    try {
+      const res = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receiverId: buddyId, text: messageText }),
+      })
+
+      if (!res.ok) throw new Error('Failed to send message')
+
+      const newMessage = await res.json()
+      
+      setOpenChats(prev => prev.map(chat => 
+        chat.buddy.id === buddyId 
+          ? { ...chat, messages: [...chat.messages, newMessage] }
+          : chat
+      ))
+      
+      setChatInputs(prev => ({ ...prev, [buddyId]: '' }))
+    } catch (error) {
+      console.error('Error sending message:', error)
+    }
+  }
+
+  const handleChatInputChange = (buddyId: number, value: string) => {
+    setChatInputs(prev => ({ ...prev, [buddyId]: value }))
+  }
+
+  useEffect(() => {
+    openChats.forEach(chat => {
+      const ref = chatBodyRefs.current[chat.buddy.id]
+      if (ref) {
+        ref.scrollTop = ref.scrollHeight
+      }
+    })
+  }, [openChats])
 
   const buddiesInCommon = selectedCourse
     ? buddies.filter(b => b.courseIds.includes(selectedCourse.id))
@@ -80,7 +174,6 @@ export default function Dashboard({ profile, courses, buddies }: DashboardProps)
     <div className={styles.wrapper}>
       {/* ─── MOBILE HEADER ────────────────────────── */}
       <div className={styles.mobileHeader}>
-        <h1 className={styles.logo}>Study Buddy</h1>
         <button
           className={styles.searchIcon}
           onClick={() => {}}
@@ -146,19 +239,18 @@ export default function Dashboard({ profile, courses, buddies }: DashboardProps)
       <main className={styles.main}>
           <h2 className={styles.welcomeMessage}>Hello, {profile.name.split(' ')[0]} 👋 Here is your dashboard!</h2>
         <h3 className={styles.sectionTitle}>Current Courses</h3>
-        <div className={styles.coursesGrid}>
+        <div className={styles.coursesContainer}>
           {filteredCourses.map(c => (
             <div
               key={c.id}
-              className={
-                c.id === filteredCourses[filteredCourses.length - 1].id
-                  ? styles.courseItemLarge
-                  : styles.courseItem
-              }
-              style={{ backgroundColor: c.color || '#ddd' }}
+              className={styles.courseCard}
+              style={{ backgroundColor: c.color || '#f5f5f5' }}
               onClick={() => setSelectedCourse(c)}
             >
-              {c.title}
+              <div className={styles.courseCardContent}>
+                <h4 className={styles.courseTitle}>{c.title}</h4>
+                <p className={styles.courseDescription}>{c.description}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -188,7 +280,13 @@ export default function Dashboard({ profile, courses, buddies }: DashboardProps)
                 <ul className={styles.modalBuddyList}>
                   {buddiesInCommon.map(b => (
                     <li key={b.id} className={styles.modalBuddyItem}>
-                      <div className={styles.buddyAvatar} />
+                      <div className={styles.buddyAvatar}>
+                        {b.avatarUrl ? (
+                          <img src={b.avatarUrl} alt={b.name} />
+                        ) : (
+                          <span>{b.name.charAt(0)}</span>
+                        )}
+                      </div>
                       <span className={styles.buddyName}>{b.name}</span>
                     </li>
                   ))}
@@ -200,29 +298,96 @@ export default function Dashboard({ profile, courses, buddies }: DashboardProps)
 
         {/* ─── CHAT WINDOWS ─────────────────────────── */}
         <div className={styles.chatContainer}>
-          {openChats.map(b => (
-            <ChatWindow key={b.id} buddy={b} onClose={() => closeChat(b.id)} />
+          {openChats.map(({ buddy, messages }) => (
+            <div key={buddy.id} className={styles.chatWindow}>
+              <div className={styles.chatHeader}>
+                <div className={styles.chatBuddyInfo}>
+                  {buddy.avatarUrl ? (
+                    <img src={buddy.avatarUrl} alt={buddy.name} className={styles.chatBuddyAvatar} />
+                  ) : (
+                    <div className={styles.chatBuddyAvatar}>{buddy.name.charAt(0)}</div>
+                  )}
+                  <span className={styles.chatBuddyName}>{buddy.name}</span>
+                </div>
+                <button onClick={() => closeChat(buddy.id)} className={styles.chatClose}>
+                  <FiX size={20} />
+                </button>
+              </div>
+              <div 
+                className={styles.chatBody}
+                ref={setChatBodyRef(buddy.id)}
+              >
+                {messages.map(msg => {
+                  const isMyMessage = msg.senderId !== buddy.id
+                  return (
+                    <div
+                      key={msg.id}
+                      className={`${styles.messageBubble} ${
+                        isMyMessage ? styles.sent : styles.received
+                      }`}
+                    >
+                      <div className={styles.messageText}>{msg.text}</div>
+                      <div className={styles.timestamp}>
+                        {new Date(msg.createdAt).toLocaleTimeString([], { 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        })}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+              <div className={styles.chatInput}>
+                <input
+                  type="text"
+                  value={chatInputs[buddy.id] || ''}
+                  onChange={e => handleChatInputChange(buddy.id, e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && sendMessage(buddy.id)}
+                  placeholder="Type a message..."
+                  className={styles.chatInputField}
+                />
+                <button 
+                  onClick={() => sendMessage(buddy.id)} 
+                  className={styles.chatSendButton}
+                  disabled={!chatInputs[buddy.id]?.trim()}
+                >
+                  Send
+                </button>
+              </div>
+            </div>
           ))}
         </div>
       </main>
 
       {/* ─── RIGHT PANEL (DESKTOP ONLY) ───────────── */}
       <aside className={styles.buddies}>
-        <h3 className={styles.sectionTitle}>Buddies Online</h3>
-        {buddies.map(b => (
-          <div key={b.id} className={styles.buddy}>
-            <div className={styles.buddyAvatar} />
-            <div className={styles.buddyInfo}>
-              <span className={styles.buddyName}>{b.name}</span>
-              <button
-                className={styles.buddyBtn}
-                onClick={() => openChat(b)}
-              >
-                <FiMessageSquare /> Text
-              </button>
+        <h3 className={styles.sectionTitle}>My Buddies</h3>
+        {loading ? (
+          <p>Loading buddies...</p>
+        ) : buddies.length === 0 ? (
+          <p>No buddies added yet.</p>
+        ) : (
+          buddies.map(b => (
+            <div key={b.id} className={styles.buddy}>
+              <div className={styles.buddyAvatar}>
+                {b.avatarUrl ? (
+                  <img src={b.avatarUrl} alt={b.name} />
+                ) : (
+                  <span>{b.name.charAt(0)}</span>
+                )}
+              </div>
+              <div className={styles.buddyInfo}>
+                <span className={styles.buddyName}>{b.name}</span>
+                <button
+                  className={styles.buddyBtn}
+                  onClick={() => openChat(b)}
+                >
+                  <FiMessageSquare /> Text
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </aside>
 
       {/* ─── BOTTOM MOBILE NAV ─────────────────────── */}
@@ -281,53 +446,6 @@ export default function Dashboard({ profile, courses, buddies }: DashboardProps)
           </button>
         </div>
       )}
-    </div>
-  )
-}
-
-function ChatWindow({
-  buddy,
-  onClose,
-}: {
-  buddy: Buddy
-  onClose(): void
-}) {
-  const [messages, setMessages] = useState<string[]>([])
-  const [input, setInput] = useState('')
-
-  const send = () => {
-    if (!input.trim()) return
-    setMessages(prev => [...prev, `You: ${input}`])
-    setInput('')
-  }
-
-  return (
-    <div className={styles.chatWindow}>
-      <div className={styles.chatHeader}>
-        <span>Chat with {buddy.name}</span>
-        <button onClick={onClose} className={styles.chatClose}>
-          ×
-        </button>
-      </div>
-      <div className={styles.chatBody}>
-        {messages.map((m, i) => (
-          <div key={i} className={styles.chatMessage}>
-            {m}
-          </div>
-        ))}
-      </div>
-      <div className={styles.chatInput}>
-        <textarea
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          placeholder="Type a message…"
-          className={styles.chatInputField}
-          rows={2}
-        />
-        <button onClick={send} className={styles.chatSend}>
-          Send
-        </button>
-      </div>
     </div>
   )
 }

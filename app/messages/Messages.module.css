@@ -230,3 +230,21 @@
   color: white;
   border-radius: 18px 18px 4px 18px;
 }
+
+.messageContent {
+  position: relative;
+  padding-right: 40px;
+}
+
+.timestamp {
+  position: absolute;
+  right: 5px;
+  bottom: 0;
+  font-size: 0.7em;
+  color: #888;
+  opacity: 0.8;
+}
+
+.message.own .timestamp {
+  color: #ccc;
+}

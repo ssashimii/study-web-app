@@ -90,7 +90,7 @@ export default function ProfileForm({ studentName }: ProfileFormProps) {
     if (res.ok) {
       router.push('/dashboard')
     } else {
-      console.error('Ошибка при создании пользователя')
+      console.error('Error while creating a profile')
     }
   }
 

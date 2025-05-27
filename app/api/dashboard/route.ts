@@ -1,4 +1,3 @@
-// route.ts
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { PrismaClient } from '@prisma/client'
 import jwt from 'jsonwebtoken'
@@ -46,39 +45,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       courses: user.courses.map(c => ({
         id: c.id,
         title: c.name,
-        description: (c as any).description,
-        color: ((c as any).color || '#ddd'),
-    })),
-
+        description: c.description,
+        color: c.color || '#ddd',
+      })),
     }
 
-    const courseIds = user.courses.map(c => c.id)
-
-    const buddies = await prisma.user.findMany({
-      where: {
-        courses: {
-          some: {
-            id: { in: courseIds },
-          },
-        },
-        NOT: { id: userId },
-      },
+    const friendsRelations = await prisma.friend.findMany({
+      where: { userId },
       include: {
-        courses: true,
-      },
+        friend: {
+          include: {
+            courses: true,
+          }
+        }
+      }
     })
 
-    const buddiesFormatted = buddies.map(b => ({
-      id: b.id,
-      name: `${b.firstName} ${b.lastName}`,
-      courseIds: b.courses.map(c => c.id),
-      avatarUrl: b.avatar ?? null,
-    }))
+    const friendsFormatted = friendsRelations.map(fr => {
+      const f = fr.friend
+      return {
+        id: f.id,
+        name: `${f.firstName} ${f.lastName}`,
+        courseIds: f.courses.map(c => c.id),
+        avatarUrl: f.avatar ?? null,
+      }
+    })
 
     res.status(200).json({
       profile,
       courses: profile.courses,
-      buddies: buddiesFormatted,
+      friends: friendsFormatted,
     })
   } catch (error) {
     console.error('API error:', error)

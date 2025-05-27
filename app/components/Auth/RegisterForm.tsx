@@ -28,7 +28,7 @@ export default function RegisterForm() {
           className={styles.input}
           required
           aria-label="First name"
-          placeholder="First Name"  // вот тут плейсхолдер
+          placeholder="First Name"  
         />
       </div>
 
@@ -40,7 +40,7 @@ export default function RegisterForm() {
           className={styles.input}
           required
           aria-label="Last name"
-          placeholder="Last Name"  // плейсхолдер
+          placeholder="Last Name"  
         />
       </div>
 
@@ -52,7 +52,7 @@ export default function RegisterForm() {
           className={styles.input}
           required
           aria-label="Email"
-          placeholder="Email"  // плейсхолдер для почты
+          placeholder="Email"
         />
       </div>
 
@@ -64,7 +64,7 @@ export default function RegisterForm() {
           className={styles.input}
           required
           aria-label="Password"
-          placeholder="Password"  // плейсхолдер для пароля
+          placeholder="Password" 
         />
       </div>
 

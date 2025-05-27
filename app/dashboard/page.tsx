@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers'
 import jwt from 'jsonwebtoken'
 import Dashboard, { Course, Buddy, Profile } from './Dashboard'
-import { getProfile, getBuddies } from '@/lib/data'  // убрал getCourses
+import { getProfile, getBuddies } from '@/lib/data'  
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key'
 
@@ -26,7 +26,6 @@ export default async function Page() {
     throw new Error('Profile not found')
   }
 
-  // Берём курсы из профиля пользователя
   const courses: Course[] = profile.courses
 
   const buddies: Buddy[] = await getBuddies(userId)

@@ -70,6 +70,11 @@ export default function MessagesPage() {
     setNewMessage('')
   }
 
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  }
+
   return (
     <div className={styles.container}>
       <aside className={styles.sidebar}>
@@ -101,7 +106,10 @@ export default function MessagesPage() {
                   key={msg.id}
                   className={`${styles.message} ${msg.senderId === currentUserId ? styles.own : ''}`}
                 >
-                  {msg.text}
+                  <div className={styles.messageContent}>
+                    {msg.text}
+                    <span className={styles.timestamp}>{formatTime(msg.createdAt)}</span>
+                  </div>
                 </div>
               ))}
             </div>
