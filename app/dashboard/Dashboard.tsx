@@ -8,6 +8,7 @@ import {
   FiX,
   FiSearch,
   FiChevronLeft,
+  FiLogOut,
 } from 'react-icons/fi'
 import styles from './Dashboard.module.css'
 import { useRouter } from 'next/navigation'
@@ -204,9 +205,9 @@ export default function Dashboard({ profile, courses, buddies: initialBuddies }:
     <div className={styles.wrapper}>
       {/* Mobile Header */}
       <div className={styles.mobileHeader}>
-        <button className={styles.searchIcon} onClick={() => {}}>
+        {/* <button className={styles.searchIcon} onClick={() => {}}>
           <FiSearch />
-        </button>
+        </button> */}
       </div>
 
       {/* Desktop Sidebar */}
@@ -581,13 +582,10 @@ export default function Dashboard({ profile, courses, buddies: initialBuddies }:
       {/* Mobile Navigation */}
       <div className={styles.mobileHeader}>
   <h1 className={styles.mobileLogo}>Study Buddy</h1>
-  <button className={styles.searchIcon} onClick={() => {}}>
-    <FiSearch />
-  </button>
 </div>
       <div className={styles.mobileNav}>
         <button onClick={() => router.push('/')}>
-          <FiHome />
+          <FiLogOut />
         </button>
         <button 
           onClick={() => setShowMobileChats(!showMobileChats)}
@@ -633,19 +631,6 @@ export default function Dashboard({ profile, courses, buddies: initialBuddies }:
           <button className={styles.navItem}>Buddies</button>
           <button className={styles.navItem} onClick={() => router.push('/messages')}>
             Messages
-          </button>
-          <button
-            className={styles.navItem}
-            onClick={async () => {
-              try {
-                const res = await fetch('/api/logout', { method: 'POST' })
-                if (res.ok) router.push('/register')
-              } catch (error) {
-                console.error('Logout error:', error)
-              }
-            }}
-          >
-            Logout
           </button>
         </div>
       )}

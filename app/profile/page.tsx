@@ -33,7 +33,6 @@ export default function ProfilePage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        // Загружаем профиль и доступные курсы
         const [profileRes, coursesRes] = await Promise.all([
           fetch('/api/profile'),
           fetch('/api/courses')
@@ -80,7 +79,6 @@ export default function ProfilePage() {
     const courseToAdd = availableCourses.find(c => c.id === selectedCourseId)
     if (!courseToAdd) return
     
-    // Проверяем, не добавлен ли уже этот курс
     if (editData.courses?.some(c => c.id === selectedCourseId)) return
     
     setEditData(prev => ({
@@ -173,31 +171,45 @@ export default function ProfilePage() {
               />
             </div>
             <div className={styles['edit-fields']}>
+            <div className={styles.editFieldGroup}>
               <label htmlFor="firstName" className={styles.inputLabel}>First Name</label>
               <input
                 type="text"
+                id="firstName"
                 name="firstName"
                 value={editData.firstName || ''}
                 onChange={handleInputChange}
-                placeholder="First Name"
+                placeholder="Enter your first name"
+                className={styles.editInput}
               />
+            </div>
+            
+            <div className={styles.editFieldGroup}>
               <label htmlFor="lastName" className={styles.inputLabel}>Last Name</label>
               <input
                 type="text"
+                id="lastName"
                 name="lastName"
                 value={editData.lastName || ''}
                 onChange={handleInputChange}
-                placeholder="Last Name"
+                placeholder="Enter your last name"
+                className={styles.editInput}
               />
+            </div>
+            
+            <div className={styles.editFieldGroup}>
               <label htmlFor="academic" className={styles.inputLabel}>Academic Year</label>
               <input
                 type="text"
+                id="academic"
                 name="academic"
                 value={editData.academic || ''}
                 onChange={handleInputChange}
-                placeholder="Academic Year"
+                placeholder="Enter your academic year"
+                className={styles.editInput}
               />
             </div>
+          </div>
           </>
         ) : (
           <>
@@ -211,22 +223,34 @@ export default function ProfilePage() {
       </div>
 
       {editing ? (
-        <section className={styles.section}>
+        <section className={styles.editSection}>
           <h2>Interests and Study Environment</h2>
-          <textarea
-            name="interests"
-            value={editData.interests || ''}
-            onChange={handleInputChange}
-            placeholder="Your interests"
-            rows={3}
-          />
-          <textarea
-            name="studyEnv"
-            value={editData.studyEnv || ''}
-            onChange={handleInputChange}
-            placeholder="Preferred study environment"
-            rows={3}
-          />
+          
+          <div className={styles.editField}>
+            <label htmlFor="interests">Your Interests</label>
+            <textarea
+              id="interests"
+              name="interests"
+              value={editData.interests || ''}
+              onChange={handleInputChange}
+              placeholder="Describe your academic interests, hobbies, etc."
+              className={styles.editTextarea}
+              rows={4}
+            />
+          </div>
+          
+          <div className={styles.editField}>
+            <label htmlFor="studyEnv">Preferred Study Environment</label>
+            <textarea
+              id="studyEnv"
+              name="studyEnv"
+              value={editData.studyEnv || ''}
+              onChange={handleInputChange}
+              placeholder="Describe your ideal study conditions (quiet space, group work, etc.)"
+              className={styles.editTextarea}
+              rows={4}
+            />
+          </div>
         </section>
       ) : (
         <section className={styles.section}>
@@ -259,7 +283,7 @@ export default function ProfilePage() {
               className={styles.addButton}
               disabled={!selectedCourseId}
             >
-              Add Course
+              add course
             </button>
           </div>
           

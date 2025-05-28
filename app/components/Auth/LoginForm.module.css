@@ -30,6 +30,7 @@
   font-size: 0.95rem;
   background-color: #f9fafb;
   transition: border-color 0.2s;
+  color: grey;
 }
 
 .input:focus {
