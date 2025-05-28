@@ -18,7 +18,7 @@ model User {
   interests    String
   studyEnv     String
   availability Availability[]
-  courses      Course[]
+  courses      Course[]        @relation("UserCourses")
   createdAt    DateTime       @default(now())
   sentMessages     Message[] @relation("SentMessages")
   receivedMessages Message[] @relation("ReceivedMessages") 
@@ -40,11 +40,11 @@ model Availability {
 model Course {
   id          Int     @id @default(autoincrement())
   name        String
-  description String?   
-  color       String?   
-  user        User    @relation(fields: [userId], references: [id])
-  userId      Int
+  description String?
+  color       String?
+  users       User[]  @relation("UserCourses")
 }
+
 
 model Message {
   id         Int      @id @default(autoincrement())

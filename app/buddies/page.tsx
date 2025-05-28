@@ -169,7 +169,6 @@ const handleRemoveFriend = async (friendId: number) => {
         <Link href="/courses" className={styles.navItem}>Courses</Link>
         <Link href="/buddies" className={`${styles.navItem} ${styles.active}`}>Buddies</Link>
         <Link href="/messages" className={styles.navItem}>Messages</Link>
-        <Link href="/settings" className={styles.navItem}>Settings</Link>
         <Link href="/" className={styles.navItem}>Logout</Link>
       </aside>
 

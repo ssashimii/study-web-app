@@ -33,8 +33,11 @@ export async function GET(req: NextRequest) {
           firstName: true,
           lastName: true,
           avatar: true,
-        //   studyPreference: true,
-          courses: true,
+          courses: {
+            select: {
+              id: true
+            }
+          },
           availability: true,
         },
       },
@@ -45,7 +48,7 @@ export async function GET(req: NextRequest) {
     id: f.friend.id,
     name: `${f.friend.firstName} ${f.friend.lastName}`,
     avatarUrl: f.friend.avatar || 'https://via.placeholder.com/100',
-    courses: f.friend.courses || [],
+    courseIds: f.friend.courses.map(c => c.id),
     availability: f.friend.availability || [],
   }));
 

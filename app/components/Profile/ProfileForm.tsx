@@ -4,6 +4,12 @@ import React, { useRef, useState, useEffect } from 'react'
 import styles from './ProfileForm.module.css'
 import { useRouter } from 'next/navigation'
 
+interface Course {
+  id: number
+  name: string
+  description?: string
+  color?: string
+}
 
 export interface ProfileFormProps {
   studentName: string
@@ -12,7 +18,8 @@ export interface ProfileFormProps {
 export default function ProfileForm({ studentName }: ProfileFormProps) {
   const router = useRouter()
   const [year, setYear] = useState('')
-  const [courses, setCourses] = useState<string[]>(['', '', ''])
+  const [selectedCourses, setSelectedCourses] = useState<Course[]>([])
+  const [availableCourses, setAvailableCourses] = useState<Course[]>([])
   const [interests, setInterests] = useState('')
   const [environment, setEnvironment] = useState('')
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
@@ -20,6 +27,8 @@ export default function ProfileForm({ studentName }: ProfileFormProps) {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [loadingCourses, setLoadingCourses] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const getFirstAndLastName = (name: string): [string, string] => {
     const parts = name.trim().split(' ')
@@ -29,6 +38,20 @@ export default function ProfileForm({ studentName }: ProfileFormProps) {
   }
 
   useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const res = await fetch('/api/courses')
+        if (!res.ok) throw new Error('Failed to fetch courses')
+        const data = await res.json()
+        setAvailableCourses(data)
+      } catch (error) {
+        console.error('Error loading courses:', error)
+        setError('Failed to load courses. Please try again later.')
+      } finally {
+        setLoadingCourses(false)
+      }
+    }
+
     const stored = sessionStorage.getItem('registerData')
     if (stored) {
       const parsed = JSON.parse(stored)
@@ -36,6 +59,8 @@ export default function ProfileForm({ studentName }: ProfileFormProps) {
       setEmail(parsed.email || '')
       setPassword(parsed.password || '')
     }
+
+    fetchCourses()
   }, [])
 
   const openFileDialog = () => {
@@ -53,44 +78,58 @@ export default function ProfileForm({ studentName }: ProfileFormProps) {
     }
   }
 
-  const handleCourseChange = (index: number, value: string) => {
-    setCourses(prev => {
-      const newCourses = [...prev]
-      newCourses[index] = value
-      return newCourses
-    })
+  const handleCourseSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const courseId = parseInt(e.target.value)
+    if (courseId) {
+      const course = availableCourses.find(c => c.id === courseId)
+      if (course && !selectedCourses.some(c => c.id === course.id)) {
+        setSelectedCourses(prev => [...prev, course])
+        e.target.value = ''
+      }
+    }
   }
 
-  const addCourse = () => {
-    if (courses.length < 7) {
-      setCourses(prev => [...prev, ''])
-    }
+  const removeCourse = (courseId: number) => {
+    setSelectedCourses(prev => prev.filter(c => c.id !== courseId))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError(null)
+
+    if (selectedCourses.length === 0) {
+      setError('Please select at least one course')
+      return
+    }
+
     const [firstName, lastName] = getFirstAndLastName(fullName)
 
-    const res = await fetch('/api/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        firstName,
-        lastName,
-        email,
-        password,
-        avatar: avatarUrl,
-        academic: year,
-        interests,
-        studyEnv: environment,
-        courses,
-      }),
-    })
+    try {
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email,
+          password,
+          avatar: avatarUrl,
+          academic: year,
+          interests,
+          studyEnv: environment,
+          courses: selectedCourses.map(c => c.id),
+        }),
+      })
 
-    if (res.ok) {
-      router.push('/dashboard')
-    } else {
-      console.error('Error while creating a profile')
+      if (res.ok) {
+        router.push('/dashboard')
+      } else {
+        const errorData = await res.json()
+        setError(errorData.error || 'Error while creating a profile')
+      }
+    } catch (err) {
+      console.error('Registration error:', err)
+      setError('Failed to register. Please try again.')
     }
   }
 
@@ -98,6 +137,8 @@ export default function ProfileForm({ studentName }: ProfileFormProps) {
     <form className={styles.container} onSubmit={handleSubmit}>
       <h1 className={styles.title}>Study Buddy</h1>
       <h2 className={styles.subtitle}>Complete your profile</h2>
+
+      {error && <div className={styles.errorMessage}>{error}</div>}
 
       <div className={styles.content}>
         <div className={styles.left}>
@@ -130,50 +171,76 @@ export default function ProfileForm({ studentName }: ProfileFormProps) {
           <div className={styles.inputGroup}>
             <input
               type="text"
-              placeholder="Academic year"
+              placeholder="Academic year (e.g., Freshman, Sophomore)"
               value={year}
               onChange={e => setYear(e.target.value)}
               className={styles.input}
               required
             />
 
-            {courses.map((c, i) => (
-              <input
-                key={i}
-                type="text"
-                placeholder={`Course ${i + 1}`}
-                value={c}
-                onChange={e => handleCourseChange(i, e.target.value)}
-                className={styles.input}
-                required={i < 3}
-              />
-            ))}
+            <div className={styles.courseSelection}>
+              <label htmlFor="course-select" className={styles.courseLabel}>
+                Select your courses:
+              </label>
+              
+              {loadingCourses ? (
+                <div className={styles.loading}>Loading courses...</div>
+              ) : (
+                <>
+                  <select
+                    id="course-select"
+                    onChange={handleCourseSelect}
+                    className={styles.courseSelect}
+                    disabled={availableCourses.length === 0}
+                  >
+                    <option value="">Choose a course...</option>
+                    {availableCourses.map(course => (
+                      <option key={course.id} value={course.id}>
+                        {course.name}
+                      </option>
+                    ))}
+                  </select>
+                  
+                  {availableCourses.length === 0 && (
+                    <p className={styles.noCourses}>No courses available. Please contact support.</p>
+                  )}
+                </>
+              )}
 
-            {courses.length < 7 && (
-              <button
-                type="button"
-                onClick={addCourse}
-                className={styles.addButton}
-              >
-                + Add another course
-              </button>
-            )}
+              <div className={styles.selectedCourses}>
+                {selectedCourses.map(course => (
+                  <div key={course.id} className={styles.courseTag}>
+                    <span>{course.name}</span>
+                    <button 
+                      type="button" 
+                      onClick={() => removeCourse(course.id)}
+                      className={styles.removeCourse}
+                      aria-label={`Remove ${course.name}`}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className={styles.textareaGroup}>
             <textarea
-              placeholder="Your Interests"
+              placeholder="Your interests (e.g., Music, Sports, Programming)"
               value={interests}
               onChange={e => setInterests(e.target.value)}
               className={styles.textarea}
               required
+              rows={3}
             />
             <textarea
-              placeholder="Study environment preference"
+              placeholder="Study environment preference (e.g., Quiet space, Group study, Online)"
               value={environment}
               onChange={e => setEnvironment(e.target.value)}
               className={styles.textarea}
               required
+              rows={3}
             />
           </div>
         </div>

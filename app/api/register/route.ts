@@ -21,6 +21,30 @@ export async function POST(req: Request) {
   } = data
 
   try {
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    })
+
+    if (existingUser) {
+      return NextResponse.json(
+        { error: 'User with this email already exists' },
+        { status: 400 }
+      )
+    }
+
+    const existingCourses = await prisma.course.findMany({
+      where: {
+        id: { in: courses.filter(Boolean) },
+      },
+    })
+
+    if (existingCourses.length !== courses.filter(Boolean).length) {
+      return NextResponse.json(
+        { error: 'One or more courses not found' },
+        { status: 400 }
+      )
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10)
 
     const user = await prisma.user.create({
@@ -34,33 +58,47 @@ export async function POST(req: Request) {
         interests,
         studyEnv,
         courses: {
-          create: courses.filter(Boolean).map((name: string) => ({ name })),
+          connect: courses.filter(Boolean).map((id: number) => ({ id })),
         },
+      },
+      include: {
+        courses: true, 
       },
     })
 
-    // Создаем токен
     const token = jwt.sign(
       { userId: user.id, email: user.email },
       JWT_SECRET,
       { expiresIn: '7d' }
     )
 
-    // Устанавливаем токен в куки
-    const cookieStore = cookies()
-    ;(await cookieStore).set({
+    const cookieStore = await cookies()
+    cookieStore.set({
       name: 'token',
       value: token,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 7 * 24 * 60 * 60, 
+      maxAge: 7 * 24 * 60 * 60,
     })
 
-    return NextResponse.json({ success: true, message: 'User registered and logged in' })
+
+    return NextResponse.json({ 
+      success: true, 
+      message: 'User registered and logged in',
+      user: {
+        id: user.id,
+        email: user.email,
+        name: `${user.firstName} ${user.lastName}`,
+        courses: user.courses,
+      }
+    })
   } catch (err) {
     console.error(err)
-    return NextResponse.json({ error: 'Failed to register user' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to register user' }, 
+      { status: 500 }
+    )
   }
 }
