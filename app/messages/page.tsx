@@ -6,9 +6,8 @@ import { useRouter } from 'next/navigation'
 
 type User = {
   id: number
-  firstName: string
-  lastName: string
-  avatar?: string
+  name: string
+  avatarUrl: string
 }
 
 type Message = {
@@ -20,8 +19,8 @@ type Message = {
 }
 
 export default function MessagesPage() {
-  const [users, setUsers] = useState<User[]>([])
-  const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [friends, setFriends] = useState<User[]>([])
+  const [selectedFriend, setSelectedFriend] = useState<User | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [currentUserId, setCurrentUserId] = useState<number | null>(null)
@@ -35,29 +34,34 @@ export default function MessagesPage() {
       })
   }, [])
 
-
   useEffect(() => {
-    fetch('/api/users')
+    fetch('/api/buddies')
       .then(res => res.json())
-      .then(data => setUsers(data))
+      .then(data => {
+        const formattedFriends = data.map((buddy: any) => ({
+          id: buddy.id,
+          name: buddy.name,
+          avatarUrl: buddy.avatarUrl
+        }))
+        setFriends(formattedFriends)
+      })
   }, [])
 
-
   useEffect(() => {
-    if (!selectedUser || !currentUserId) return
+    if (!selectedFriend || !currentUserId) return
 
-    fetch(`/api/messages?contactId=${selectedUser.id}`)
+    fetch(`/api/messages?contactId=${selectedFriend.id}`)
       .then(res => res.json())
       .then(data => setMessages(data))
-  }, [selectedUser, currentUserId])
+  }, [selectedFriend, currentUserId])
 
   const sendMessage = async () => {
-    if (!newMessage.trim() || !selectedUser || !currentUserId) return
+    if (!newMessage.trim() || !selectedFriend || !currentUserId) return
 
     const res = await fetch('/api/messages', {
       method: 'POST',
       body: JSON.stringify({
-        receiverId: selectedUser.id,
+        receiverId: selectedFriend.id,
         text: newMessage,
       }),
       headers: {
@@ -83,21 +87,23 @@ export default function MessagesPage() {
         </button>
         <h2>Messages</h2>
         <ul className={styles.userList}>
-          {users.map(user => (
-            <li key={user.id} onClick={() => setSelectedUser(user)}>
-              {user.avatar && <img src={user.avatar} alt="avatar" className={styles.avatar} />}
-              <span>
-                {user.id === currentUserId ? 'Your own chat' : `${user.firstName} ${user.lastName}`}
-              </span>
+          {friends.map(friend => (
+            <li 
+              key={friend.id} 
+              onClick={() => setSelectedFriend(friend)}
+              className={selectedFriend?.id === friend.id ? styles.selected : ''}
+            >
+              <img src={friend.avatarUrl} alt="avatar" className={styles.avatar} />
+              <span>{friend.name}</span>
             </li>
           ))}
         </ul>
       </aside>
       <main className={styles.chatArea}>
-        {selectedUser ? (
+        {selectedFriend ? (
           <>
             <div className={styles.chatHeader}>
-              Chat with {selectedUser.id === currentUserId ? 'yourself' : selectedUser.firstName}
+              Chat with {selectedFriend.name}
             </div>
 
             <div className={styles.messageList}>
@@ -128,11 +134,10 @@ export default function MessagesPage() {
               />
               <button onClick={sendMessage}>Send</button>
             </div>
-
           </>
         ) : (
           <div className={styles.placeholder}>
-            Select a conversation to start chatting.
+            Select a friend to start chatting.
           </div>
         )}
       </main>
