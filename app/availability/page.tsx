@@ -2,41 +2,28 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import styles from './availability.module.css'
+import { FiMenu, FiX } from 'react-icons/fi'
 
 type Availability = {
   day: string
   from: string
   to: string
   topic?: string
-  user?: {
-    firstName: string
-    lastName: string
-  }
+  user?: { firstName: string; lastName: string }
 }
 
 export default function AvailabilityPage() {
   const router = useRouter()
-
   const [myAvailabilities, setMyAvailabilities] = useState<Availability[]>([])
   const [allAvailabilities, setAllAvailabilities] = useState<Availability[]>([])
   const [newEntry, setNewEntry] = useState({ day: '', from: '', to: '', topic: '' })
-
-  const fetchMyAvailabilities = async () => {
-    const res = await fetch('/api/availability')
-    const data = await res.json()
-    setMyAvailabilities(data)
-  }
-
-  const fetchAllAvailabilities = async () => {
-    const res = await fetch('/api/availability/others')
-    const data = await res.json()
-    setAllAvailabilities(data)
-  }
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
-    fetchMyAvailabilities()
-    fetchAllAvailabilities()
+    fetch('/api/availability').then(r => r.json()).then(setMyAvailabilities)
+    fetch('/api/availability/others').then(r => r.json()).then(setAllAvailabilities)
   }, [])
 
   const handleAdd = async () => {
@@ -45,130 +32,88 @@ export default function AvailabilityPage() {
       alert('Please fill all required fields')
       return
     }
-
-    try {
-      const res = await fetch('/api/availability', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ day, from, to, topic }),
-      })
-
-      if (!res.ok) {
-        const errorData = await res.json()
-        alert('Error: ' + (errorData.error || res.statusText))
-        return
-      }
-
+    const res = await fetch('/api/availability', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ day, from, to, topic }),
+    })
+    if (!res.ok) {
+      const err = await res.json()
+      alert(err.error || res.statusText)
+    } else {
       setNewEntry({ day: '', from: '', to: '', topic: '' })
-      await fetchMyAvailabilities()
-      await fetchAllAvailabilities()
-    } catch (error) {
-      alert('Network or unexpected error: ' + error)
+      // refresh
+      const mine = await (await fetch('/api/availability')).json()
+      const all  = await (await fetch('/api/availability/others')).json()
+      setMyAvailabilities(mine)
+      setAllAvailabilities(all)
     }
   }
 
-  const friendsAvailabilities = allAvailabilities.filter(allEntry =>
-    !myAvailabilities.some(myEntry =>
-      myEntry.day === allEntry.day &&
-      myEntry.from === allEntry.from &&
-      myEntry.to === allEntry.to &&
-      myEntry.topic === allEntry.topic
+  const friendsAvail = allAvailabilities.filter(a =>
+    !myAvailabilities.some(m =>
+      m.day === a.day && m.from === a.from && m.to === a.to && m.topic === a.topic
     )
   )
 
   return (
     <div className={styles.wrapper}>
-      <main className={styles.main}>
+      {/* DESKTOP SIDEBAR */}
+      <aside className={styles.sidebar}>
+        <h2 className={styles.sidebarTitle}>My Dashboard</h2>
+        <Link href="/profile"   className={styles.navItem}>Profile</Link>
+        <Link href="/courses"   className={styles.navItem}>Courses</Link>
+        <Link href="/buddies"   className={styles.navItem}>Buddies</Link>
+        <Link href="/messages"  className={styles.navItem}>Messages</Link>
+        <Link href="/availability" className={`${styles.navItem} ${styles.active}`}>Availability</Link>
+      </aside>
 
-        {}
-        <button
-          className={styles.backButton}
-          onClick={() => router.push('/dashboard')}
-          aria-label="Go back to dashboard"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            marginBottom: '20px',
-            background: 'none',
-            border: 'none',
-            color: 'black',
-            cursor: 'pointer',
-            fontSize: '16px',
-          }}
-        >
-          {}
-          <span style={{ fontSize: '20px', lineHeight: '1' }}>←</span> Back
+      {/* MAIN CONTENT */}
+      <main className={styles.main}>
+        <button className={styles.backButton} onClick={() => router.push('/dashboard')}>
+          <span className={styles.backArrow}>←</span> Back
         </button>
 
-        {}
         <section className={styles.addSection}>
           <h2 className={styles.title}>Add Availability</h2>
-
           <div className={styles.form}>
-            <input
-              className={styles.input}
-              type="date"
-              value={newEntry.day}
-              onChange={e => setNewEntry({ ...newEntry, day: e.target.value })}
-            />
-            <input
-              className={styles.input}
-              type="time"
-              value={newEntry.from}
-              onChange={e => setNewEntry({ ...newEntry, from: e.target.value })}
-            />
-            <input
-              className={styles.input}
-              type="time"
-              value={newEntry.to}
-              onChange={e => setNewEntry({ ...newEntry, to: e.target.value })}
-            />
-            <input
-              className={styles.input}
-              placeholder="Topic (optional)"
-              value={newEntry.topic}
-              onChange={e => setNewEntry({ ...newEntry, topic: e.target.value })}
-            />
-            <button onClick={handleAdd} className={styles.button}>
-              Add Availability
-            </button>
+            <input type="date"   value={newEntry.day}   onChange={e => setNewEntry({...newEntry, day: e.target.value})}   className={styles.input}/>
+            <input type="time"   value={newEntry.from}  onChange={e => setNewEntry({...newEntry, from: e.target.value})}  className={styles.input}/>
+            <input type="time"   value={newEntry.to}    onChange={e => setNewEntry({...newEntry, to: e.target.value})}    className={styles.input}/>
+            <input               placeholder="Topic (optional)" value={newEntry.topic} onChange={e => setNewEntry({...newEntry, topic: e.target.value})} className={styles.input}/>
+            <button onClick={handleAdd} className={styles.button}>Add Availability</button>
           </div>
         </section>
 
-        {}
         <section className={styles.bottomRow}>
-          {}
           <div className={styles.leftColumn}>
             <h2 className={styles.title}>My Availability</h2>
             <div className={styles.list}>
               {myAvailabilities.length === 0 && <p>No availability found.</p>}
-              {myAvailabilities.map((entry, i) => (
+              {myAvailabilities.map((e,i) => (
                 <div key={i} className={styles.entry}>
                   <div className={styles.entryContent}>
-                    <div><strong>📅 Day:</strong> {entry.day}</div>
-                    <div><strong>⏰ From:</strong> {entry.from}</div>
-                    <div><strong>⏰ To:</strong> {entry.to}</div>
-                    {entry.topic && <div><strong>📚 Topic:</strong> {entry.topic}</div>}
+                    <div><strong>📅 Day:</strong> {e.day}</div>
+                    <div><strong>⏰ From:</strong> {e.from}</div>
+                    <div><strong>⏰ To:</strong> {e.to}</div>
+                    {e.topic && <div><strong>📚 Topic:</strong> {e.topic}</div>}
                   </div>
                 </div>
               ))}
             </div>
           </div>
-
-          {}
           <div className={styles.rightColumn}>
             <h2 className={styles.title}>Friends' Availability</h2>
             <div className={styles.list}>
-              {friendsAvailabilities.length === 0 && <p>No friends' availability found.</p>}
-              {friendsAvailabilities.map((entry, i) => (
+              {friendsAvail.length === 0 && <p>No friends' availability.</p>}
+              {friendsAvail.map((e,i) => (
                 <div key={i} className={styles.entry}>
                   <div className={styles.entryContent}>
-                    <div><strong>👤 User:</strong> {entry.user?.firstName} {entry.user?.lastName}</div>
-                    <div><strong>📅 Day:</strong> {entry.day}</div>
-                    <div><strong>⏰ From:</strong> {entry.from}</div>
-                    <div><strong>⏰ To:</strong> {entry.to}</div>
-                    {entry.topic && <div><strong>📚 Topic:</strong> {entry.topic}</div>}
+                    <div><strong>👤 User:</strong> {e.user?.firstName} {e.user?.lastName}</div>
+                    <div><strong>📅 Day:</strong> {e.day}</div>
+                    <div><strong>⏰ From:</strong> {e.from}</div>
+                    <div><strong>⏰ To:</strong> {e.to}</div>
+                    {e.topic && <div><strong>📚 Topic:</strong> {e.topic}</div>}
                   </div>
                 </div>
               ))}
@@ -176,6 +121,26 @@ export default function AvailabilityPage() {
           </div>
         </section>
       </main>
+
+      {/* MOBILE HAMBURGER */}
+      <button
+        className={styles.hamburgerBtn}
+        onClick={() => setMobileMenuOpen(o => !o)}
+        aria-label="Toggle Dashboard Menu"
+      >
+        {mobileMenuOpen ? <FiX size={24}/> : <FiMenu size={24}/>}
+      </button>
+
+      {/* MOBILE DROPDOWN */}
+      {mobileMenuOpen && (
+        <div className={styles.mobileDropdown}>
+          <Link href="/profile"   className={styles.navItem} onClick={()=>setMobileMenuOpen(false)}>Profile</Link>
+          <Link href="/courses"   className={styles.navItem} onClick={()=>setMobileMenuOpen(false)}>Courses</Link>
+          <Link href="/buddies"   className={styles.navItem} onClick={()=>setMobileMenuOpen(false)}>Buddies</Link>
+          <Link href="/messages"  className={styles.navItem} onClick={()=>setMobileMenuOpen(false)}>Messages</Link>
+          <Link href="/availability" className={`${styles.navItem} ${styles.active}`} onClick={()=>setMobileMenuOpen(false)}>Availability</Link>
+        </div>
+      )}
     </div>
   )
 }
