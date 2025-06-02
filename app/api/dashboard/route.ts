@@ -1,24 +1,32 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
+import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import jwt from 'jsonwebtoken'
-import cookie from 'cookie'
+import { parse as parseCookie } from 'cookie'
 
 const prisma = new PrismaClient()
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key'
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export async function GET(req: NextRequest) {
   try {
-    const cookies = req.headers.cookie ? cookie.parse(req.headers.cookie) : {}
+    const cookieHeader = req.headers.get('cookie') || ''
+    const cookies = parseCookie(cookieHeader)
     const token = cookies.token
+
     if (!token) {
-      return res.status(401).json({ error: 'Unauthorized: No token provided' })
+      return NextResponse.json(
+        { error: 'Unauthorized: No token provided' },
+        { status: 401 }
+      )
     }
 
     let decoded
     try {
       decoded = jwt.verify(token, JWT_SECRET) as { userId: number }
     } catch (err) {
-      return res.status(401).json({ error: 'Invalid token' })
+      return NextResponse.json(
+        { error: 'Invalid token' },
+        { status: 401 }
+      )
     }
 
     const userId = decoded.userId
@@ -32,7 +40,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     })
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' })
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      )
     }
 
     const profile = {
@@ -71,13 +82,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     })
 
-    res.status(200).json({
+    return NextResponse.json({
       profile,
       courses: profile.courses,
       friends: friendsFormatted,
     })
+
   } catch (error) {
     console.error('API error:', error)
-    res.status(500).json({ error: 'Internal server error' })
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
   }
 }
