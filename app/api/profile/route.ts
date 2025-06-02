@@ -72,7 +72,6 @@ export async function PUT(request: Request) {
     const userId = decoded.userId
     const data = await request.json()
 
-    // Обновляем основную информацию пользователя
     await prisma.user.update({
       where: { id: userId },
       data: {
@@ -85,9 +84,8 @@ export async function PUT(request: Request) {
       }
     })
 
-    // Обновляем курсы пользователя
     if (data.courses) {
-      // Получаем текущие курсы пользователя
+
       const currentUser = await prisma.user.findUnique({
         where: { id: userId },
         select: {
@@ -100,25 +98,21 @@ export async function PUT(request: Request) {
       const currentCourseIds = currentUser?.courses.map(c => c.id) || []
       const newCourseIds = data.courses.map((c: {id: number}) => c.id)
 
-      // Курсы для добавления
       const coursesToAdd = newCourseIds.filter((id: number) => !currentCourseIds.includes(id))
       
-      // Курсы для удаления
       const coursesToRemove = currentCourseIds.filter(id => !newCourseIds.includes(id))
 
-      // Обновляем связи
       await prisma.user.update({
         where: { id: userId },
         data: {
           courses: {
-            connect: coursesToAdd.map(id => ({ id })),
-            disconnect: coursesToRemove.map(id => ({ id }))
+            connect: coursesToAdd.map((id: number) => ({ id })),
+            disconnect: coursesToRemove.map((id: number) => ({ id }))
           }
         }
       })
     }
 
-    // Получаем обновленные данные пользователя
     const updatedUser = await prisma.user.findUnique({
       where: { id: userId },
       select: {
