@@ -16,6 +16,7 @@ import { useRouter } from 'next/navigation'
 export interface Course {
   id: number
   title: string
+  name?: string
   description: string
   color?: string
 }
@@ -23,13 +24,14 @@ export interface Buddy {
   id: number
   name: string
   courseIds?: number[]
-  avatarUrl?: string
+  avatarUrl?: string | null
   courses?: Course[]
 }
 export interface Profile {
   name: string
   year: string
   avatarUrl: string | null
+  courses?: Course[]
 }
 
 interface Message {

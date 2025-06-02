@@ -26,7 +26,10 @@ export default async function Page() {
     throw new Error('Profile not found')
   }
 
-  const courses: Course[] = profile.courses
+  if (!profile.courses) {
+  throw new Error('Profile courses not found');
+  }
+  const courses: Course[] = profile.courses;
 
   const buddies: Buddy[] = await getBuddies(userId)
 
