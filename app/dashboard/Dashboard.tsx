@@ -565,9 +565,6 @@ export default function Dashboard({ profile, courses, buddies: initialBuddies }:
                   </div>
                   <div className={styles.buddyInfo}>
                     <span className={styles.buddyName}>{b.name}</span>
-                    <span className={styles.lastMessage}>
-                      {openChats.find(c => c.buddy.id === b.id)?.messages.slice(-1)[0]?.text || 'No messages yet'}
-                    </span>
                   </div>
                 </div>
               ))}
@@ -604,33 +601,24 @@ export default function Dashboard({ profile, courses, buddies: initialBuddies }:
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
         <div className={styles.mobileDropdown}>
-          <h2 className={styles.sidebarTitle}>My Dashboard</h2>
-          <button
-            className={styles.navItem}
-            onClick={() => setProfileDropdownOpen(p => !p)}
+          <h2 className={styles.sidebarTitle}>Navigation</h2>
+          <button 
+            className={styles.navItem} 
+            onClick={() => router.push('/profile')}
           >
-            Profile ▾
+            View Profile
           </button>
-          {profileDropdownOpen && (
-            <div className={styles.dropdownMenu}>
-              <button
-                className={styles.dropdownItem}
-                onClick={() => router.push('/profile')}
-              >
-                View Profile
-              </button>
-              <button
-                className={styles.dropdownItem}
-                onClick={() => router.push('/availability')}
-              >
-                Your Study Availability
-              </button>
-            </div>
-          )}
-          <button className={styles.navItem}>Courses</button>
-          <button className={styles.navItem}>Buddies</button>
-          <button className={styles.navItem} onClick={() => router.push('/messages')}>
-            Messages
+          <button 
+            className={styles.navItem} 
+            onClick={() => router.push('/availability')}
+          >
+            Study Availability
+          </button>
+          <button 
+            className={styles.navItem} 
+            onClick={() => router.push('/buddies')}
+          >
+            Buddies
           </button>
         </div>
       )}

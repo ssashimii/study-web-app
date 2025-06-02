@@ -35,6 +35,19 @@ export async function GET(req: NextRequest) {
     orderBy: { createdAt: 'asc' },
   })
 
+  if (contactId) {
+    await prisma.message.updateMany({
+      where: {
+        senderId: contactId,
+        receiverId: currentUserId,
+        isRead: false,
+      },
+      data: {
+        isRead: true,
+      },
+    })
+  }
+
   return NextResponse.json(messages)
 }
 
@@ -51,6 +64,7 @@ export async function POST(req: NextRequest) {
       senderId: currentUserId,
       receiverId,
       text,
+      isRead: false, 
     },
   })
 

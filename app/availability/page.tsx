@@ -22,39 +22,53 @@ export default function AvailabilityPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
-    fetch('/api/availability').then(r => r.json()).then(setMyAvailabilities)
-    fetch('/api/availability/others').then(r => r.json()).then(setAllAvailabilities)
-  }, [])
+    const loadData = async () => {
+      try {
+        const [myAvail, friendsAvail] = await Promise.all([
+          fetch('/api/availability').then(r => r.json()),
+          fetch('/api/availability/others').then(r => r.json())
+        ]);
+        setMyAvailabilities(myAvail);
+        setAllAvailabilities(friendsAvail);
+      } catch (error) {
+        console.error('Failed to load availability data:', error);
+      }
+    };
+
+    loadData();
+  }, []);
 
   const handleAdd = async () => {
-    const { day, from, to, topic } = newEntry
+    const { day, from, to, topic } = newEntry;
     if (!day || !from || !to) {
-      alert('Please fill all required fields')
-      return
+      alert('Please fill all required fields');
+      return;
     }
-    const res = await fetch('/api/availability', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ day, from, to, topic }),
-    })
-    if (!res.ok) {
-      const err = await res.json()
-      alert(err.error || res.statusText)
-    } else {
-      setNewEntry({ day: '', from: '', to: '', topic: '' })
-      // refresh
-      const mine = await (await fetch('/api/availability')).json()
-      const all  = await (await fetch('/api/availability/others')).json()
-      setMyAvailabilities(mine)
-      setAllAvailabilities(all)
-    }
-  }
 
-  const friendsAvail = allAvailabilities.filter(a =>
-    !myAvailabilities.some(m =>
-      m.day === a.day && m.from === a.from && m.to === a.to && m.topic === a.topic
-    )
-  )
+    try {
+      const res = await fetch('/api/availability', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ day, from, to, topic }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Failed to add availability');
+      }
+
+      setNewEntry({ day: '', from: '', to: '', topic: '' });
+      
+      const [myAvail, friendsAvail] = await Promise.all([
+        fetch('/api/availability').then(r => r.json()),
+        fetch('/api/availability/others').then(r => r.json())
+      ]);
+      setMyAvailabilities(myAvail);
+      setAllAvailabilities(friendsAvail);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
 
   return (
     <div className={styles.wrapper}>
@@ -62,7 +76,6 @@ export default function AvailabilityPage() {
       <aside className={styles.sidebar}>
         <h2 className={styles.sidebarTitle}>My Dashboard</h2>
         <Link href="/profile"   className={styles.navItem}>Profile</Link>
-        <Link href="/courses"   className={styles.navItem}>Courses</Link>
         <Link href="/buddies"   className={styles.navItem}>Buddies</Link>
         <Link href="/messages"  className={styles.navItem}>Messages</Link>
         <Link href="/availability" className={`${styles.navItem} ${styles.active}`}>Availability</Link>
@@ -105,18 +118,21 @@ export default function AvailabilityPage() {
           <div className={styles.rightColumn}>
             <h2 className={styles.title}>Friends' Availability</h2>
             <div className={styles.list}>
-              {friendsAvail.length === 0 && <p>No friends' availability.</p>}
-              {friendsAvail.map((e,i) => (
-                <div key={i} className={styles.entry}>
-                  <div className={styles.entryContent}>
-                    <div><strong>👤 User:</strong> {e.user?.firstName} {e.user?.lastName}</div>
-                    <div><strong>📅 Day:</strong> {e.day}</div>
-                    <div><strong>⏰ From:</strong> {e.from}</div>
-                    <div><strong>⏰ To:</strong> {e.to}</div>
-                    {e.topic && <div><strong>📚 Topic:</strong> {e.topic}</div>}
+              {allAvailabilities.length === 0 ? (
+                <p>No friends' availability.</p>
+              ) : (
+                allAvailabilities.map((e,i) => (
+                  <div key={i} className={styles.entry}>
+                    <div className={styles.entryContent}>
+                      <div><strong>👤 User:</strong> {e.user?.firstName} {e.user?.lastName}</div>
+                      <div><strong>📅 Day:</strong> {e.day}</div>
+                      <div><strong>⏰ From:</strong> {e.from}</div>
+                      <div><strong>⏰ To:</strong> {e.to}</div>
+                      {e.topic && <div><strong>📚 Topic:</strong> {e.topic}</div>}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </section>
@@ -135,7 +151,7 @@ export default function AvailabilityPage() {
       {mobileMenuOpen && (
         <div className={styles.mobileDropdown}>
           <Link href="/profile"   className={styles.navItem} onClick={()=>setMobileMenuOpen(false)}>Profile</Link>
-          <Link href="/courses"   className={styles.navItem} onClick={()=>setMobileMenuOpen(false)}>Courses</Link>
+          <Link href="/dashboard"   className={styles.navItem} onClick={()=>setMobileMenuOpen(false)}>Dashboard</Link>
           <Link href="/buddies"   className={styles.navItem} onClick={()=>setMobileMenuOpen(false)}>Buddies</Link>
           <Link href="/messages"  className={styles.navItem} onClick={()=>setMobileMenuOpen(false)}>Messages</Link>
           <Link href="/availability" className={`${styles.navItem} ${styles.active}`} onClick={()=>setMobileMenuOpen(false)}>Availability</Link>

@@ -8,6 +8,7 @@ type User = {
   id: number
   name: string
   avatarUrl: string
+  unreadCount?: number
 }
 
 type Message = {
@@ -16,6 +17,7 @@ type Message = {
   senderId: number
   receiverId: number
   createdAt: string
+  isRead: boolean
 }
 
 export default function MessagesPage() {
@@ -35,24 +37,77 @@ export default function MessagesPage() {
   }, [])
 
   useEffect(() => {
+    if (!currentUserId) return
+
     fetch('/api/buddies')
       .then(res => res.json())
-      .then(data => {
-        const formattedFriends = data.map((buddy: any) => ({
+      .then(async (buddies) => {
+        const formattedFriends = buddies.map((buddy: any) => ({
           id: buddy.id,
           name: buddy.name,
-          avatarUrl: buddy.avatarUrl
+          avatarUrl: buddy.avatarUrl,
+          unreadCount: 0
         }))
-        setFriends(formattedFriends)
+
+        const unreadResponse = await fetch('/api/messages/unread-count')
+        const unreadCounts = await unreadResponse.json()
+
+        const updatedFriends = formattedFriends.map((friend: { id: any }) => {
+          const unreadData = unreadCounts.find((u: any) => u.senderId === friend.id)
+          return {
+            ...friend,
+            unreadCount: unreadData?._count?._all || 0
+          }
+        })
+
+        setFriends(updatedFriends)
       })
-  }, [])
+
+    const interval = setInterval(() => {
+      fetch('/api/messages/unread-count')
+        .then(res => res.json())
+        .then(unreadCounts => {
+          setFriends(prevFriends => 
+            prevFriends.map(friend => {
+              const unreadData = unreadCounts.find((u: any) => u.senderId === friend.id)
+              return {
+                ...friend,
+                unreadCount: unreadData?._count?._all || 0
+              }
+            })
+          )
+        })
+    }, 10000)
+
+    return () => clearInterval(interval)
+  }, [currentUserId])
 
   useEffect(() => {
     if (!selectedFriend || !currentUserId) return
 
     fetch(`/api/messages?contactId=${selectedFriend.id}`)
       .then(res => res.json())
-      .then(data => setMessages(data))
+      .then(data => {
+        setMessages(data)
+        
+        if (data.some((msg: Message) => msg.senderId === selectedFriend.id && !msg.isRead)) {
+          fetch('/api/messages/mark-as-read', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ senderId: selectedFriend.id })
+          }).then(() => {
+            setFriends(prevFriends => 
+              prevFriends.map(friend => 
+                friend.id === selectedFriend.id 
+                  ? { ...friend, unreadCount: 0 } 
+                  : friend
+              )
+            )
+          })
+        }
+      })
   }, [selectedFriend, currentUserId])
 
   const sendMessage = async () => {
@@ -95,6 +150,11 @@ export default function MessagesPage() {
             >
               <img src={friend.avatarUrl} alt="avatar" className={styles.avatar} />
               <span>{friend.name}</span>
+              {friend.unreadCount && friend.unreadCount > 0 ? (
+                <span className={styles.unreadBadge}>
+                  {friend.unreadCount > 9 ? '9+' : friend.unreadCount}
+                </span>
+              ) : null}
             </li>
           ))}
         </ul>
@@ -104,13 +164,18 @@ export default function MessagesPage() {
           <>
             <div className={styles.chatHeader}>
               Chat with {selectedFriend.name}
+              {friends.find(f => f.id === selectedFriend.id)?.unreadCount ? (
+                <span className={styles.unreadBadge}>
+                  {friends.find(f => f.id === selectedFriend.id)?.unreadCount}
+                </span>
+              ) : null}
             </div>
 
             <div className={styles.messageList}>
               {messages.map(msg => (
                 <div
                   key={msg.id}
-                  className={`${styles.message} ${msg.senderId === currentUserId ? styles.own : ''}`}
+                  className={`${styles.message} ${msg.senderId === currentUserId ? styles.own : ''} ${!msg.isRead && msg.senderId !== currentUserId ? styles.unread : ''}`}
                 >
                   <div className={styles.messageContent}>
                     {msg.text}

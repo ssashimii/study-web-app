@@ -54,6 +54,7 @@ model Message {
   senderId   Int
   receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
   receiverId Int
+  isRead      Boolean  @default(false)
 }
 
 model Friend {
