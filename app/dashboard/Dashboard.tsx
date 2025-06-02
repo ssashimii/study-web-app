@@ -24,6 +24,7 @@ export interface Buddy {
   name: string
   courseIds?: number[]
   avatarUrl?: string
+  courses?: Course[]
 }
 export interface Profile {
   name: string
