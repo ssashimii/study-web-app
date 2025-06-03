@@ -8,4 +8,4 @@ First, run the development server:
 npm run dev
 ```
 
-Open study-web-app-five.vercel.app to see the result.
+Open (study-web-app-five.vercel.app) to see the result.
